@@ -91,7 +91,7 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
             self.view.layoutIfNeeded()//这语句和tableview.reload()功能相同，只是是Constrain Lyout的Reload，意思是只要uiview中有变动的话就reload。
         }
     }
-    //Declare textFieldDidEndEditing here: heightConstraint将会以0.2秒的速度降下回到原来的50pixel。
+    //Declare textFieldDidEndEditing here: 这个功能适合tabGesture一起使用的，tabGesture定义是让tableView反应用户点击了textField意外的地方，如果点击了textField意外的地方后heightConstraint将会以0.2秒的速度降下回到原来的50pixel。
     func textFieldDidEndEditing(_ textField: UITextField) {
         UIView.animate(withDuration: 0.2){
             self.heightConstraint.constant = 50
