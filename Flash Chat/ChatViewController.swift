@@ -12,7 +12,7 @@ import  Firebase
 class ChatViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
     
     // Declare instance variables here
-    
+    var messageArray : [Message]  = [Message]()
     // We've pre-linked the IBOutlets
     @IBOutlet var heightConstraint: NSLayoutConstraint!
     @IBOutlet var sendButton: UIButton!
@@ -30,15 +30,20 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
 
     @IBAction func sendPressed(_ sender: AnyObject) {
-        messageTextfield.endEditing(true)
         
+        messageTextfield.endEditing(true)
         messageTextfield.isEnabled = false
         sendButton.isEnabled = false
         
+        //when the send Button gets triggered we are going to create a reference to a new database inside our main database, and we are going to give it a name called "messages".
         let messagesDB=Database.database().reference().child("Messages")
+        //to save the usere message as a dictionary.
+        
         let messageDictionary=["Sender":Auth.auth().currentUser?.email, "MessageBody":messageTextfield.text!]
+        //childByAutoId() it creates a custom random key for our message, so that our message ca be saved under their own unique独特的 identifier.
         
         messagesDB.childByAutoId().setValue(messageDictionary){
+        //setValue(messageDictionary): essentially all that this line is doing is we are saving our message dictionary insider our "messages" database under a automaticallygenerated identifier.
             (error, referenc) in
             if error != nil {
                 print(error!)
@@ -58,6 +63,8 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         messageTableView.dataSource = self
         messageTextfield.delegate = self
         
+        retrieveMessages()//在firebase内取出message
+        
         configereTableView()//定义Cell的高度来自于func configereTableView()
         
         //Register your MessageCell.xib file here:
@@ -69,7 +76,6 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
         @objc func tableViewTapped(){
         messageTextfield.endEditing(true)//键盘回收
-           
     }
     
     //Declare configureTableView here:
@@ -103,11 +109,39 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
 
     
     //TODO: Create the retrieveMessages method here:
+    func retrieveMessages() {
+        let messageDB = Database.database().reference().child("Messages")
+        
+        messageDB.observe(DataEventType.childAdded, with: { (snapshot) in
+            
+            let snapShotValue = snapshot.value as! Dictionary<String, String>
+            
+            let text = snapShotValue["MessageBody"]!
+            let sender = snapShotValue["Sender"]!
+            print(text, sender)
+            
+            let message = Message()
+            message.messageBody = text
+            message.sender = sender
+            self.messageArray.append(message)
+            self.configereTableView()
+            self.messageTableView.reloadData()
+            
+        })
+        
+    }
+    
+    
+    
+    
+    
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = messageTableView.dequeueReusableCell(withIdentifier: "customMessageCell", for: indexPath) as! CustomMessageCell
         
-        let messageArray = ["first message","secound message","thirt message"]
-        cell.messageBody.text = messageArray[indexPath.row]
+        cell.messageBody.text = messageArray[indexPath.row].messageBody
+        cell.senderUsername.text = messageArray[indexPath.row].sender
+        cell.avatarImageView.image=UIImage(named: "Die Diamantspitzhacke")
         return cell
         
     }
@@ -115,7 +149,7 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
     //TODO: Declare numberOfRowsInSection here:
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 3
+        return messageArray.count
     }
 }
 
