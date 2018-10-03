@@ -8,11 +8,12 @@
 
 import UIKit
 import  Firebase
+import ChameleonFramework
 
 class ChatViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
     
     // Declare instance variables here
-    var messageArray : [Message]  = [Message]()
+    var messageArray : [Message] = [Message]()
     // We've pre-linked the IBOutlets
     @IBOutlet var heightConstraint: NSLayoutConstraint!
     @IBOutlet var sendButton: UIButton!
@@ -35,15 +36,15 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         messageTextfield.isEnabled = false
         sendButton.isEnabled = false
         
-        //when the send Button gets triggered we are going to create a reference to a new database inside our main database, and we are going to give it a name called "messages".
+        //when the send Button gets triggered we are going to create a reference to a new database inside our main database, and we are going to give it a name called "Messages".
         let messagesDB=Database.database().reference().child("Messages")
+       
         //to save the usere message as a dictionary.
-        
         let messageDictionary=["Sender":Auth.auth().currentUser?.email, "MessageBody":messageTextfield.text!]
-        //childByAutoId() it creates a custom random key for our message, so that our message ca be saved under their own unique独特的 identifier.
         
+        //childByAutoId() it creates a custom random key for our message, so that our message ca be saved under their own unique独特的 identifier.
         messagesDB.childByAutoId().setValue(messageDictionary){
-        //setValue(messageDictionary): essentially all that this line is doing is we are saving our message dictionary insider our "messages" database under a automaticallygenerated identifier.
+        //setValue(messageDictionary): essentially all that this line is doing is we are saving our message dictionary insider our "Messages" database under a automaticallygenerated identifier.
             (error, referenc) in
             if error != nil {
                 print(error!)
@@ -142,6 +143,18 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         cell.messageBody.text = messageArray[indexPath.row].messageBody
         cell.senderUsername.text = messageArray[indexPath.row].sender
         cell.avatarImageView.image=UIImage(named: "Die Diamantspitzhacke")
+        
+        if cell.senderUsername.text == Auth.auth().currentUser?.email as String!{
+            //Message we sent
+            
+            cell.avatarImageView.backgroundColor = UIColor.flatBlue()
+            cell.messageBackground.backgroundColor = UIColor.flatSand()
+            
+        }else{
+            cell.avatarImageView.backgroundColor = UIColor.flatRed()
+            cell.messageBackground.backgroundColor = UIColor.flatPink()
+        }
+        
         return cell
         
     }
